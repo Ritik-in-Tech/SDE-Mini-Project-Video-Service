@@ -1,3 +1,4 @@
 .env
-*.json
+package-lock.json
+sde-mini-project-55e8f67d46c6.json
 *node_modules
