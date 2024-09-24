@@ -1,25 +1,20 @@
 import { bucket } from "../constants.js";
 export const uploadFile = async (req, res) => {
   if (!req.file) {
-    return res.status(400).json({ error: "No file uploaded." });
+    return res.status(400).json({ error: "No Video provided" });
   }
 
   const { title, description } = req.body;
-
-  if (!title || !description) {
-    return res
-      .status(400)
-      .json({ error: "Title and description are required." });
-  }
 
   const blob = bucket.file(req.file.originalname);
   const blobStream = blob.createWriteStream();
 
   blobStream.on("error", (err) => {
     console.error(err);
-    return res
-      .status(500)
-      .json({ error: "Unable to upload file to Google Cloud Storage." });
+    return res.status(500).json({
+      error: "Unable to upload file to Google Cloud Storage.",
+      error: err,
+    });
   });
 
   blobStream.on("finish", async () => {
