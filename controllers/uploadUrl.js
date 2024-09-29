@@ -40,12 +40,12 @@ export const uploadVideoFromUrl = async (req, res) => {
         const newVideo = new Video({
           title,
           rawVideoUrl: publicUrl,
-          transcodedVideoUrl: `https://storage.googleapis.com/${process.env.ENCODED_BUCKET_NAME}/encoded-videos-folder/${title}.mp4/`,
+          transcodedVideoUrl: `http://${process.env.CDN_URL}/encoded-videos-folder/${title}.mp4/`,
           // thumbnailUrl: "",
           // metaData: [{ key: "description", value: description }],
         });
 
-        await newVideo.save();
+        http: await newVideo.save();
 
         res.status(200).json({
           message: "File uploaded and video saved successfully.",
