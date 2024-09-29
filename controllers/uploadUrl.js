@@ -3,24 +3,23 @@ import fs from "fs";
 import path from "path";
 import exec from "youtube-dl-exec";
 import { fileURLToPath } from "url";
-import { generateUniqueId } from "../helpers/generate_id.js";
-import { insertVideo } from "../helpers/insert_query.js";
+import { Video } from "../models/videos.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export const uploadVideoFromUrl = async (req, res) => {
-  const { videoUrl, title, description } = req.body;
+  const { youtubeUrl, title } = req.body;
 
-  if (!videoUrl) {
-    return res.status(400).json({ error: "No Video URL provided" });
+  if (!youtubeUrl || !title) {
+    return res
+      .status(400)
+      .json({ error: "No youtubeUrl provided or title is missing" });
   }
 
   try {
-    const uniqueId = await generateUniqueId();
-
     const videoPath = path.resolve(__dirname, "video.mp4");
-    await exec(videoUrl, {
+    await exec(youtubeUrl, {
       output: videoPath,
       format: "mp4",
     });
@@ -32,29 +31,26 @@ export const uploadVideoFromUrl = async (req, res) => {
     fileStream.pipe(blobStream);
 
     blobStream.on("finish", async () => {
-      await blob.setMetadata({
-        metadata: {
-          title,
-          description,
-        },
-      });
-
       const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
 
       try {
-        await insertVideo(uniqueId, title, description, publicUrl);
+        const newVideo = new Video({
+          title,
+          rawVideoUrl: publicUrl,
+          // thumbnailUrl: "",
+          // metaData: [{ key: "description", value: description }],
+        });
+
+        await newVideo.save();
+
         res.status(200).json({
-          message: "File uploaded successfully.",
-          fileUrl: publicUrl,
-          metadata: {
-            title,
-            description,
-            uniqueId,
-          },
+          message: "File uploaded and video saved successfully.",
+          video: newVideo,
         });
       } catch (error) {
+        console.error("Error saving to MongoDB:", error);
         res.status(500).json({
-          error: "Failed to insert into database.",
+          error: "Failed to save video data to MongoDB.",
           details: error.message,
         });
       }

@@ -9,6 +9,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export const storage = new Storage({
-  keyFilename: path.join(__dirname, "../sde-mini-project-55e8f67d46c6.json"),
+  keyFilename: path.join(__dirname, "../video-streaming-sde-e841869e50e7.json"),
   projectId: process.env.GCS_PROJECT_ID,
 });

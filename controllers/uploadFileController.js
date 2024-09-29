@@ -1,15 +1,17 @@
 import { bucket } from "../constants.js";
-import { generateUniqueId } from "../helpers/generate_id.js";
-import { insertVideo } from "../helpers/insert_query.js";
+import { Video } from "../models/videos.js";
 
 export const uploadFile = async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: "No Video provided" });
   }
-  const { title, description } = req.body;
-  try {
-    const uniqueId = await generateUniqueId();
+  const { title, genre } = req.body;
 
+  if (!title) {
+    return res.status(400).json({ error: "No title provided" });
+  }
+
+  try {
     const blob = bucket.file(req.file.originalname);
     const blobStream = blob.createWriteStream();
 
@@ -22,29 +24,27 @@ export const uploadFile = async (req, res) => {
     });
 
     blobStream.on("finish", async () => {
-      await blob.setMetadata({
-        metadata: {
-          title,
-          description,
-        },
-      });
-
       const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
 
       try {
-        await insertVideo(uniqueId, title, description, publicUrl);
+        const newVideo = new Video({
+          title,
+          rawVideoUrl: publicUrl,
+          // thumbnailUrl: "",
+          // metaData: [{ key: "description", value: description }],
+        });
+
+        await newVideo.save();
+
         res.status(200).json({
-          message: "File uploaded successfully.",
+          message: "File uploaded and video saved successfully.",
           fileUrl: publicUrl,
-          metadata: {
-            title,
-            description,
-            uniqueId,
-          },
+          video: newVideo,
         });
       } catch (error) {
+        console.error("Error saving to MongoDB:", error);
         res.status(500).json({
-          error: "Failed to insert into database.",
+          error: "Failed to save video data to MongoDB.",
           details: error.message,
         });
       }

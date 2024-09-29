@@ -1,40 +1,20 @@
-import mysql from "mysql2/promise";
-import dotenv from "dotenv";
+import mongoose from "mongoose";
 
-dotenv.config();
-
-let pool;
-
-const createTcpPool = async (config = {}) => {
-  if (!pool) {
-    const dbConfig = {
-      host: process.env.DB_HOST,
-      port: parseInt(process.env.DB_PORT, 10),
-      user: process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_NAME,
-      ...config,
-      // If you're using a private IP, you might need to use the socketPath
-      // socketPath: `/cloudsql/${process.env.INSTANCE_CONNECTION_NAME}`,
-    };
-
-    try {
-      pool = await mysql.createPool(dbConfig);
-      console.log("Connected to the database successfully.");
-    } catch (error) {
-      console.error("Error connecting to the database:", error);
-      throw error;
-    }
-  }
-  return pool;
-};
-
-const closePool = async () => {
-  if (pool) {
-    await pool.end();
-    pool = null;
-    console.log("Database connection pool closed.");
+export let dbInstance = undefined;
+const connectDB = async () => {
+  try {
+    // console.log(process.env.DB_ADMIN);
+    const connectionInstance = await mongoose.connect(
+      `mongodb+srv://${process.env.DB_ADMIN}:${process.env.DB_PASSWORD}@software1.gptczdh.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority&appName=software1`
+    );
+    dbInstance = connectionInstance;
+    console.log(
+      `\n☘️  MongoDB Connected! Db host: ${connectionInstance.connection.host}\n`
+    );
+  } catch (error) {
+    console.log("MongoDB connection error: ", error);
+    process.exit(1);
   }
 };
 
-export { createTcpPool, closePool };
+export { connectDB };
