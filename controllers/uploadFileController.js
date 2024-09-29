@@ -38,7 +38,6 @@ export const uploadFile = async (req, res) => {
 
         res.status(200).json({
           message: "File uploaded and video saved successfully.",
-          fileUrl: publicUrl,
           video: newVideo,
         });
       } catch (error) {
