@@ -1,5 +1,8 @@
 import { bucket } from "../constants.js";
 import { Video } from "../models/videos.js";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 export const uploadFile = async (req, res) => {
   if (!req.file) {
@@ -30,6 +33,7 @@ export const uploadFile = async (req, res) => {
         const newVideo = new Video({
           title,
           rawVideoUrl: publicUrl,
+          transcodedVideoUrl: `https://storage.googleapis.com/${process.env.ENCODED_BUCKET_NAME}/encoded-videos-folder/${title}.mp4/`,
           // thumbnailUrl: "",
           // metaData: [{ key: "description", value: description }],
         });

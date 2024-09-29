@@ -4,6 +4,9 @@ import path from "path";
 import exec from "youtube-dl-exec";
 import { fileURLToPath } from "url";
 import { Video } from "../models/videos.js";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -37,6 +40,7 @@ export const uploadVideoFromUrl = async (req, res) => {
         const newVideo = new Video({
           title,
           rawVideoUrl: publicUrl,
+          transcodedVideoUrl: `https://storage.googleapis.com/${process.env.ENCODED_BUCKET_NAME}/encoded-videos-folder/${title}.mp4/`,
           // thumbnailUrl: "",
           // metaData: [{ key: "description", value: description }],
         });
