@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import ReactHlsPlayer from "react-hls-player";
 import { API_BASE_URL_VIDEO } from "../config";
+import { API_BASE_URL_VIDEO_PROD } from "../config";
 
 const VideoPlayer = ({ user }) => {
   // Accept user prop
@@ -10,7 +11,7 @@ const VideoPlayer = ({ user }) => {
   useEffect(() => {
     const getVideos = async () => {
       try {
-        const response = await axios.get(`${API_BASE_URL_VIDEO}`);
+        const response = await axios.get(`${API_BASE_URL_VIDEO_PROD}/api`);
         console.log(response.data);
         setVideos(response.data);
       } catch (error) {
