@@ -4,45 +4,43 @@ import SignupPage from "./pages/signup";
 import LoginPage from "./pages/login";
 import VideoPlayer from "./pages/video";
 import "./App.css";
-import { API_BASE_URL_AUTH_PROD } from "./config";
+import { API_BASE_URL_AUTH_PROD, API_BASE_URL_VIDEO } from "./config";
 
 const App = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
 
-  useEffect(() => {
-    const authToken = localStorage.getItem("authToken");
 
-    if (authToken) {
-      fetch(`${API_BASE_URL_AUTH_PROD}/api/v1/users`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${authToken}`,
-        },
-      })
-        .then(async (res) => {
-          const data = await res.json();
-          if (res.status === 200) {
-            setUser(data.data); // Store user details in state
-            navigate("/videoPlayer");
-          } else {
-            localStorage.removeItem("authToken");
-            navigate("/login");
-          }
-        })
-        .catch(() => {
-          localStorage.removeItem("authToken");
-          navigate("/login");
-        });
-    } else {
-      navigate("/login");
-    }
-  }, [navigate]);
+  //   if (authToken) {
+  //     fetch(`${API_BASE_URL_VIDEO}/api/v1/users`, {
+  //       method: "GET",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         Authorization: `Bearer ${authToken}`,
+  //       },
+  //     })
+  //       .then(async (res) => {
+  //         const data = await res.json();
+  //         if (res.status === 200) {
+  //           setUser(data.data); // Store user details in state
+  //           navigate("/videoPlayer");
+  //         } else {
+  //           localStorage.removeItem("authToken");
+  //           navigate("/login");
+  //         }
+  //       })
+  //       .catch(() => {
+  //         localStorage.removeItem("authToken");
+  //         navigate("/login");
+  //       });
+  //   } else {
+  //     navigate("/login");
+  //   }
+  // }, [navigate]);
 
   return (
     <div>
-      <nav>
+      {/* <nav>
         <ul>
           {!user ? ( // Conditionally render Sign Up and Login links
             <>
@@ -57,7 +55,7 @@ const App = () => {
             <li style={{ float: "right", marginRight: "10px" }}></li>
           )}
         </ul>
-      </nav>
+      </nav> */}
 
       <Routes>
         <Route path="/signup" element={<SignupPage />} />
