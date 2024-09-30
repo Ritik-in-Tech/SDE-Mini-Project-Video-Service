@@ -1,12 +1,45 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import ReactHlsPlayer from "react-hls-player";
-import { API_BASE_URL_VIDEO } from "../config";
-import { API_BASE_URL_VIDEO_PROD } from "../config";
+import "./video.css";
+import { API_BASE_URL_AUTH_PROD, API_BASE_URL_VIDEO_PROD } from "../config";
 
-const VideoPlayer = ({ user }) => {
+const VideoPlayer = () => {
+  const navigate = useNavigate();
+
   // Accept user prop
   const [videos, setVideos] = useState([]);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const authToken = localStorage.getItem("authToken");
+console.log(authToken);
+    if (authToken) {
+      fetch(`${API_BASE_URL_AUTH_PROD}/api/v1/users`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authToken}`,
+        },
+      })
+        .then(async (res) => {
+          const data = await res.json();
+          if (res.status === 200) {
+            setUser(data.data); // Store user details in state
+          } else {
+            localStorage.removeItem("authToken");
+            navigate("/login");
+          }
+        })
+        .catch(() => {
+          localStorage.removeItem("authToken");
+          navigate("/login");
+        });
+    } else {
+      navigate("/login");
+    }
+  }, []);
 
   useEffect(() => {
     const getVideos = async () => {
@@ -23,7 +56,7 @@ const VideoPlayer = ({ user }) => {
   }, []);
 
   return (
-    <div className="App p-4">
+    <div className="videoPlayer-main-div">
       {/* Display user details in the top-right corner */}
       {user && (
         <div style={{ position: "absolute", top: 10, right: 20 }}>
@@ -33,7 +66,7 @@ const VideoPlayer = ({ user }) => {
         </div>
       )}
       <h1 className="text-2xl font-bold mb-4">Video Gallery</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 main-grid-video">
         {videos && videos.length > 0 ? (
           videos.map((videoData) => (
             <div key={videoData.id} className="video-container h-3">
@@ -41,8 +74,8 @@ const VideoPlayer = ({ user }) => {
                 src={videoData.transcodedVideoUrl.hd}
                 autoPlay={false}
                 controls={true}
-                width="50%"
-                height="50%"
+                width="100%"
+                height="100%"
                 playerRef={React.createRef()}
                 hlsConfig={{
                   maxLoadingDelay: 4,

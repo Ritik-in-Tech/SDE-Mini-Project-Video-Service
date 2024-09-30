@@ -1,8 +1,10 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./login.css";
 import { API_BASE_URL_AUTH_PROD } from "../config";
 
 const LoginPage = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -36,6 +38,7 @@ const LoginPage = () => {
       if (response.ok) {
         console.log("Login successful:", data);
         localStorage.setItem("authToken", data.data.authToken);
+        navigate("/videoPlayer");
       } else {
         setError(data.message || "Login failed");
       }

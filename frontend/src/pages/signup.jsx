@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import "./signup.css";
 import axios from "axios";
-import { API_BASE_URL_AUTH_PROD } from "../config";
+import { useNavigate } from "react-router-dom";
+import { API_BASE_URL_AUTH_PROD, API_BASE_URL_VIDEO } from "../config";
 
 const SignupPage = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -34,6 +36,7 @@ const SignupPage = () => {
           password: "",
         });
         setMessage(response.data.message || "User registered successfully!");
+        navigate("/login");
       } else {
         setMessage("Something went wrong. Please try again.");
       }
@@ -92,7 +95,7 @@ const SignupPage = () => {
           {loading ? "Signing Up..." : "Sign Up"}
         </button>
       </form>
-
+      <p>Already have account? <a href="/login">Login</a></p>
       {message && <p className="message">{message}</p>}
     </div>
   );
