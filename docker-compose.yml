@@ -1,0 +1,38 @@
+version: '3'
+services:
+  mini-backend:
+    build:
+      context: backend
+      dockerfile: Dockerfile
+    image: sde-mini-project-backend
+    container_name: mini-backend
+    restart: unless-stopped
+    ports:
+      - 3000:3000
+    volumes:
+      - ./backend:/app
+    networks:
+      - app-network
+    command: npm start
+  react:
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+    image: sde-mini-project-frontend
+    container_name: mini-frontend
+    restart: unless-stopped
+    ports:
+    - 5173:5173
+    volumes:
+    - ./frontend:/app
+    - /app/node_modules
+    networks:
+      - app-network
+    command: npm run dev
+ 
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  dbdata:
