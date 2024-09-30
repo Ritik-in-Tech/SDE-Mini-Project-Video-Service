@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import uploadRouter from "./routes/videoRoutes.js";
 import { connectDB } from "./config/db.js";
 // import { createTcpPool, closePool } from "./config/db.js";
@@ -7,6 +8,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(express.json());
+app.use(cors());
 app.use("/api", uploadRouter);
 
 app.get("/", (req, res) => {
