@@ -1,28 +1,27 @@
-import { bucket } from "../constants.js";
+import { Video } from "../models/videos.js";
 
-export const getVideosFromBucket = async (req, res) => {
+export const getVideosFromDB = async (req, res) => {
   try {
-    const [files] = await bucket.getFiles();
+    const transcodedVideos = await Video.find({
+      transcodedVideoUrl: { $exists: true, $ne: null },
+    }).select("transcodedVideoUrl -_id");
 
-    const fileData = await Promise.all(
-      files.map(async (file) => {
-        const [metadata] = await file.getMetadata();
+    if (!transcodedVideos || transcodedVideos.length === 0) {
+      return res.status(404).json({ message: "No transcoded videos found" });
+    }
 
-        return {
-          fileUrl: `https://storage.googleapis.com/${bucket.name}/${file.name}`,
-          metadata: metadata.metadata || {},
-        };
-      })
-    );
+    const formattedVideos = transcodedVideos.map((video) => ({
+      transcodedVideoUrl: {
+        hd: `${video.transcodedVideoUrl}media-hd.m3u8`,
+        sd: `${video.transcodedVideoUrl}media-sd.m3u8`,
+      },
+    }));
 
-    res.status(200).json({
-      message: "Videos retrieved successfully.",
-      Videos: fileData,
-    });
+    res.status(200).json(formattedVideos);
   } catch (error) {
-    console.error("Error retrieving files: ", error);
-    res
-      .status(500)
-      .json({ error: "Failed to retrieve files from the bucket." });
+    console.error("Error retrieving transcoded videos: ", error);
+    res.status(500).json({
+      error: "Failed to retrieve transcoded videos from the database.",
+    });
   }
 };
