@@ -1,108 +1,74 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-import ReactHlsPlayer from "react-hls-player";
-import { Play } from "lucide-react";
-
-
-const VideoCard = ({ video, onClick }) => (
-  <div
-    className="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer"
-    onClick={onClick}
-  >
-    <div className="relative">
-      <img
-        src={video.thumbnail}
-        alt={video.name}
-        className="w-full h-40 object-cover"
-      />
-      <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 hover:opacity-100 transition-opacity">
-        <Play className="text-white" size={48} />
-      </div>
-    </div>
-    <div className="p-4">
-      <h3 className="text-lg font-semibold truncate">{video.name}</h3>
-    </div>
-  </div>
-);
+import React, { useEffect, useState } from "react";
+import { Routes, Route, Link, useNavigate } from "react-router-dom";
+import SignupPage from "./pages/signup";
+import LoginPage from "./pages/login";
+import VideoPlayer from "./pages/video";
+import "./App.css";
+import { API_BASE_URL_AUTH_PROD } from "./config";
 
 const App = () => {
-  const [videos, setVideos] = useState([]);
-  const [currentVideo, setCurrentVideo] = useState([]);
-  const [quality, setQuality] = useState("hd");
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
 
-  const handleQualityChange = (event) => {
-    setQuality(event.target.value);
-  };
+  useEffect(() => {
+    const authToken = localStorage.getItem("authToken");
 
-  useEffect (()=> {
-    const getVideos = async () => {
-      const response = await axios.get('http://localhost:3000');
-      console.log(response);
-      setVideos(response);
+    if (authToken) {
+      fetch(`${API_BASE_URL_AUTH_PROD}/api/v1/users`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authToken}`,
+        },
+      })
+        .then(async (res) => {
+          const data = await res.json();
+          if (res.status === 200) {
+            setUser(data.data); // Store user details in state
+            navigate("/videoPlayer");
+          } else {
+            localStorage.removeItem("authToken");
+            navigate("/login");
+          }
+        })
+        .catch(() => {
+          localStorage.removeItem("authToken");
+          navigate("/login");
+        });
+    } else {
+      navigate("/login");
     }
+  }, [navigate]);
 
-    getVideos();
-  }, []);
+  return (
+    <div>
+      <nav>
+        <ul>
+          {!user ? ( // Conditionally render Sign Up and Login links
+            <>
+              <li>
+                <Link to="/signup">Sign Up</Link>
+              </li>
+              <li>
+                <Link to="/login">Login</Link>
+              </li>
+            </>
+          ) : (
+            <li style={{ float: "right", marginRight: "10px" }}></li>
+          )}
+        </ul>
+      </nav>
 
-  
-return (
-  <div className="App">
-    {videos.map((videoData) => (
-      <ReactHlsPlayer
-        src={videoData["transcodedVideoUrl"]["hd"]}
-        autoPlay={false}
-        controls={true}
-        width="100%"
-        height="auto"
-        hlsConfig={{
-          maxLoadingDelay: 4,
-          minAutoBitrate: 0,
-          lowLatencyMode: true,
-        }}
-      />
-    ))}
-  </div>
-);
-
-  // return (
-  //   <div className="container mx-auto p-4">
-  //     <div className="mb-8">
-  //       <ReactHlsPlayer
-  //         src={currentVideo[quality]}
-  //         autoPlay={false}
-  //         controls={true}
-  //         width="100%"
-  //         height="auto"
-  //         className="rounded-lg shadow-lg"
-  //         hlsConfig={{
-  //           maxLoadingDelay: 4,
-  //           minAutoBitrate: 0,
-  //           lowLatencyMode: true,
-  //         }}
-  //       />
-  //       <div className="mt-4 flex justify-between items-center">
-  //         <h2 className="text-2xl font-bold">{currentVideo.name}</h2>
-  //         <select
-  //           className="p-2 border border-gray-300 rounded-md"
-  //           onChange={handleQualityChange}
-  //           value={quality}
-  //         >
-  //           <option value="hd">HD</option>
-  //           <option value="sd">SD</option>
-  //         </select>
-  //       </div>
-  //     </div>
-  //     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-  //       {videoSources.map((video) => (
-  //         <VideoCard
-  //           key={video.name}
-  //           video={video}
-  //           onClick={() => setCurrentVideo(video)}
-  //         />
-  //       ))}
-  //     </div>
-  //   </div>
-  // );
+      <Routes>
+        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route
+          path="/videoPlayer"
+          element={<VideoPlayer user={user} />} // Pass user details as props
+        />
+      </Routes>
+    </div>
+  );
 };
 
 export default App;
